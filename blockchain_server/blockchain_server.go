@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"goblockchain/block"
 	"goblockchain/utils"
 	"goblockchain/wallet"
@@ -56,7 +55,6 @@ func (bcs *BlockchainServer) GetChain(w http.ResponseWriter, req *http.Request) 
 func (bcs *BlockchainServer) Transactions(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodGet:
-		fmt.Println("CHEGOU NO GET")
 		w.Header().Add("Content-Type", "application/json")
 		bc := bcs.GetBlockchain()
 		transactions := bc.TransactionPool()
@@ -71,7 +69,6 @@ func (bcs *BlockchainServer) Transactions(w http.ResponseWriter, req *http.Reque
 		io.WriteString(w, string(m))
 		break
 	case http.MethodPost:
-		fmt.Println("CHEGOU NO POST")
 		decoder := json.NewDecoder(req.Body)
 		var t block.TransactionRequest
 		err := decoder.Decode(&t)
@@ -122,7 +119,6 @@ func (bcs *BlockchainServer) Transactions(w http.ResponseWriter, req *http.Reque
 		break
 
 	case http.MethodPut:
-		fmt.Println("CHEGOU NO PUT")
 		decoder := json.NewDecoder(req.Body)
 		var t block.TransactionRequest
 		err := decoder.Decode(&t)
@@ -240,6 +236,24 @@ func (bcs *BlockchainServer) Amount(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (bcs *BlockchainServer) Consensus(w http.ResponseWriter, req *http.Request) {
+	switch req.Method {
+	case http.MethodPut:
+		bc := bcs.GetBlockchain()
+		replaced := bc.ResolveConflicts()
+
+		w.Header().Add("Content-Type", "application/json")
+		if replaced {
+			io.WriteString(w, string(utils.JsonStatus("success")))
+		} else {
+			io.WriteString(w, string(utils.JsonStatus("fail")))
+		}
+	default:
+		log.Println("Invalid HTTP method!")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
 func (bcs *BlockchainServer) Run() {
 	bcs.GetBlockchain().Run()
 
@@ -248,5 +262,7 @@ func (bcs *BlockchainServer) Run() {
 	http.HandleFunc("/mine", bcs.Mine)
 	http.HandleFunc("/mine/start", bcs.StartMine)
 	http.HandleFunc("/amount", bcs.Amount)
+	http.HandleFunc("/consensus", bcs.Consensus)
+
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(bcs.Port())), nil))
 }
