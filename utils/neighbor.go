@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"net"
-	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -52,21 +51,31 @@ func FindNeighbors(myHost string, myPort uint16, startIp uint8, endIp uint8, sta
 }
 
 func GetHost() string {
-	hostname, err := os.Hostname()
 
-	if err != nil {
-		fmt.Println(err)
-		return "127.0.0.1"
-	}
+	return "127.0.0.1"
 
-	address, err := net.LookupHost(hostname)
+	/*
+		TODO: need to repair the hosts based on valid hosts
+			  today, this implementation is not working correctly,
+			  addresses are changing in the array, and its not resolving correctly
 
-	if err != nil {
-		fmt.Println(err)
-		return "127.0.0.1"
-	}
+			hostname, err := os.Hostname()
 
-	fmt.Println(address[1])
+			if err != nil {
+				fmt.Println(err)
+				return "127.0.0.1"
+			}
 
-	return address[1]
+			address, err := net.LookupHost(hostname)
+
+			if err != nil {
+				fmt.Println(err)
+				return "127.0.0.1"
+			}
+
+			fmt.Println(address[1])
+
+			return address[1]
+
+	*/
 }
